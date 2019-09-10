@@ -1,0 +1,52 @@
+syntax = "proto3";
+package burner;
+option java_package = "tv.dotstart.burner.protocol";
+
+import "google/protobuf/empty.proto";
+
+service PluginService {
+
+  /**
+   * Provides a channel in which host heartbeats are transmitted on a regular interval.
+   *
+   * Plugins will respond to these empty heartbeats with a general status message which indicates
+   * whether the plugin is still initializing or healthy. If the channel is lost, or no heartbeat
+   * is received for a while, the plugin is permitted to terminate gracefully early.
+   *
+   * By default, this heartbeat period is set to 30 seconds. Plugins terminate their connection
+   * after 90 seconds without receiving a heartbeat by default.
+   */
+  rpc Heartbeat (stream google.protobuf.Empty) returns (stream PluginStatus);
+
+  /**
+   * Requests a graceful plugin shutdown.
+   *
+   * This message is typically invoked when the host shuts down or when a plugin is unloaded by a
+   * user (either for the purposes of updating or to disable the provided functionality). The exact
+   * semantics of this call are up to the host implementation.
+   */
+  rpc Shutdown (google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+message PluginStatus {
+  State state = 1;
+}
+
+enum State {
+
+  /**
+   * Plugin is still initializing its internal logic and is not yet ready to serve host
+   * requests.
+   */
+  INITIALIZING = 0x00;
+
+  /**
+   * Plugin is operating as expected - No host intervention required
+   */
+  HEALTHY = 0x10;
+
+  /**
+   * Plugin is performing a graceful shutdown - Host should wait for this process to complete.
+   */
+  SHUTTING_DOWN = 0x20;
+}

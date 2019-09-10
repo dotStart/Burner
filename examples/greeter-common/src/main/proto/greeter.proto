@@ -1,0 +1,9 @@
+syntax = "proto3";
+package greeter;
+option java_package = "tv.dotstart.burner.examples.greeter.protocol";
+
+import "google/protobuf/wrappers.proto";
+
+service GreeterService {
+  rpc GetGreeting (google.protobuf.StringValue) returns (google.protobuf.StringValue);
+}
